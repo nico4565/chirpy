@@ -24,23 +24,30 @@ func handlerValidateChirp(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	splitBody := strings.Split(params.ChirpBody, " ")
-	cleanedSplitBody := []string{}
-	for _, s := range splitBody {
-		toLowS := strings.ToLower(s)
-		if toLowS == "kerfuffle" || toLowS == "sharbert" || toLowS == "fornax" {
-			cleanedSplitBody = append(cleanedSplitBody, "****")
-			continue
-		}
-		cleanedSplitBody = append(cleanedSplitBody, s)
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
 	}
 
 	type validateResponse struct {
 		CleanedBody string `json:"cleaned_body"`
 	}
 	payload := validateResponse{
-		CleanedBody: strings.Join(cleanedSplitBody, " "),
+		CleanedBody: getCleanedBody(params.ChirpBody, badWords),
 	}
 	respondWithJSON(w, 200, payload)
 
+}
+
+func getCleanedBody(body string, badWords map[string]struct{}) string {
+	words := strings.Split(body, " ")
+	for i, word := range words {
+		loweredWord := strings.ToLower(word)
+		if _, ok := badWords[loweredWord]; ok {
+			words[i] = "****"
+		}
+	}
+	cleaned := strings.Join(words, " ")
+	return cleaned
 }
