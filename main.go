@@ -1,22 +1,57 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/nico4565/chirpy/internal/database"
 )
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	db             *database.Queries
+	env            string
+}
+
+func setupDb() *database.Queries {
+	godotenv.Load()
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL must be set")
+	}
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print("Db connection setup successfully!")
+
+	return database.New(db)
 }
 
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
-	apiCfg := apiConfig{}
+	database := setupDb()
+	env := os.Getenv("PLATFORM")
+	if env == "" {
+		log.Fatal("PLATFORM must be set")
+	}
+	apiCfg := apiConfig{
+		fileserverHits: atomic.Int32{},
+		db:             database,
+		env:            env,
+	}
 
 	mux := http.NewServeMux()
+
+	handlerHome := http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))
+	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handlerHome))
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 
@@ -24,8 +59,7 @@ func main() {
 
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 
-	handlerHome := http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))
-	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handlerHome))
+	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
 
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 
