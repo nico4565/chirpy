@@ -5,7 +5,7 @@ import (
 )
 
 func (cfg *apiConfig) handlerReset(w http.ResponseWriter, req *http.Request) {
-	if cfg.platform != "dev" {
+	if cfg.env != "dev" {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("Reset is only allowed in dev environment."))
 		return
