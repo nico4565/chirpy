@@ -10,7 +10,7 @@ import (
 	"github.com/nico4565/chirpy/internal/database"
 )
 
-type validateResponse struct {
+type responseCreateUsers struct {
 	Id        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -43,7 +43,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, req *http.Request
 	b, _ := json.MarshalIndent(user, "", "  ")
 	log.Printf("New User Created:\n %v", string(b))
 
-	respondWithJSON(w, http.StatusCreated, validateResponse{
+	respondWithJSON(w, http.StatusCreated, responseCreateUsers{
 		Id:        user.ID,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
