@@ -17,7 +17,8 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
 	env            string
-	secret         string
+	jwt_secret     string
+	polka_key      string
 }
 
 func setupDb() *database.Queries {
@@ -40,15 +41,24 @@ func main() {
 	const port = "8080"
 	database := setupDb()
 	env := os.Getenv("PLATFORM")
-	secret := os.Getenv("SECRET")
 	if env == "" {
 		log.Fatal("PLATFORM must be set")
 	}
+	jwt_secret := os.Getenv("JWT_SECRET")
+	if jwt_secret == "" {
+		log.Fatal("JWT_SECRET must be set")
+	}
+	polka_secret := os.Getenv("POLKA_KEY")
+	if jwt_secret == "" {
+		log.Fatal("POLKA_KEY must be set")
+	}
+
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             database,
 		env:            env,
-		secret:         secret,
+		jwt_secret:     jwt_secret,
+		polka_key:      polka_secret,
 	}
 
 	mux := http.NewServeMux()
@@ -63,8 +73,6 @@ func main() {
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.handlerGetChirp)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.handlerDeleteChirp)
 
-	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
-
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
 	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)
 
@@ -72,6 +80,9 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
 
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerPolkaUpdate)
+
+	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 
 	server := http.Server{

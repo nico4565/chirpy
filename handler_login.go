@@ -21,6 +21,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, req *http.Request) {
 		Email        string    `json:"email"`
 		Token        string    `json:"token"`
 		RefreshToken string    `json:"refresh_token"`
+		IsChirpyRed  bool      `json:"is_chirpy_red"`
 	}
 
 	type parameters struct {
@@ -69,7 +70,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	expireDuration := time.Duration(3600) * time.Second
-	accesToken, err := auth.MakeJWT(user.ID, cfg.secret, expireDuration)
+	accesToken, err := auth.MakeJWT(user.ID, cfg.jwt_secret, expireDuration)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "failed to make jwt", err)
 		return
@@ -101,5 +102,6 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, req *http.Request) {
 		Email:        user.Email,
 		Token:        accesToken,
 		RefreshToken: refreshToken,
+		IsChirpyRed:  user.IsChirpyRed,
 	})
 }

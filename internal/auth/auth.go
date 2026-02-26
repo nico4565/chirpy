@@ -86,13 +86,26 @@ func GetBearerToken(headers http.Header) (string, error) {
 	headerValue := headers.Get("Authorization")
 	fmt.Printf("headerValue:%v\n\n\n", headerValue)
 	if headerValue == "" {
-		return "", errors.New("Couldn't get authorization header!")
+		return "", errors.New("Couldn't get Authorization header!")
 	}
 
 	tokenString := strings.Replace(headerValue, "Bearer", "", 1)
 	tokenString = strings.TrimSpace(tokenString)
 	fmt.Printf("tokenString:%v\n\n\n", tokenString)
 	return tokenString, nil
+}
+
+func GetApiKey(headers http.Header) (string, error) {
+	headerValue := headers.Get("Authorization")
+	fmt.Printf("headerValue:%v\n\n\n", headerValue)
+	if headerValue == "" {
+		return "", errors.New("Couldn't get Authorization header!")
+	}
+
+	apiKeyString := strings.Replace(headerValue, "ApiKey", "", 1)
+	apiKeyString = strings.TrimSpace(apiKeyString)
+	fmt.Printf("apiKeyString:%v\n\n\n", apiKeyString)
+	return apiKeyString, nil
 }
 
 func MakeRefreshToken() (string, error) {

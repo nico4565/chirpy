@@ -33,7 +33,7 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, req *http.Request) {
 	}
 
 	expireDuration := time.Duration(3600) * time.Second
-	accesToken, err := auth.MakeJWT(refreshTokenEntity.UserID, cfg.secret, expireDuration)
+	accesToken, err := auth.MakeJWT(refreshTokenEntity.UserID, cfg.jwt_secret, expireDuration)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "failed to make jwt", err)
 		return

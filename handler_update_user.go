@@ -43,7 +43,7 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, req *http.Request
 		respondWithError(w, http.StatusUnauthorized, "Couldn't get bearer token!", err)
 		return
 	}
-	userIdFromToken, err := auth.ValidateJWT(refreshToken, cfg.secret)
+	userIdFromToken, err := auth.ValidateJWT(refreshToken, cfg.jwt_secret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't validate token!", err)
 		return

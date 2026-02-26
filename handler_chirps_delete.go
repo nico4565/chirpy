@@ -21,7 +21,7 @@ func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	userId, err := auth.ValidateJWT(token, cfg.secret)
+	userId, err := auth.ValidateJWT(token, cfg.jwt_secret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't validate token!", err)
 		return
@@ -29,7 +29,7 @@ func (cfg *apiConfig) handlerDeleteChirp(w http.ResponseWriter, req *http.Reques
 
 	dBchirp, err := cfg.db.GetChirpById(req.Context(), id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, fmt.Sprintf("Chirp with ID: [] not found", id), nil)
+		respondWithError(w, http.StatusNotFound, fmt.Sprintf("Chirp with ID: [%v] not found", id), nil)
 		return
 	}
 
